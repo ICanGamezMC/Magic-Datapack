@@ -1,0 +1,44 @@
+import math
+import create:config as config
+
+config.file_checker()
+
+append function_tag minecraft:tick {
+    "values": [
+        "particle:tick"
+    ]
+}
+append function_tag minecraft:load {
+    "values": [
+        "particle:load"
+    ]
+}
+function particle:load:
+    say loaded particles
+
+    #This is an example of pulling value from another file
+    say config.a
+
+    scoreboard objectives add Timer dummy Timer
+
+
+
+function particle:tick:
+    execute as @e[tag=Timer] run scoreboard players add @s Timer 1
+    execute as @e[tag=Circle] run function particle:entity_particle/circle
+
+function particle:raycast:
+    execute facing entity @p eyes:
+        particle flame
+        execute unless entity @a[distance=..2] positioned ^ ^ ^0.1 run function particle:raycast
+
+
+function particle:entity_particle/circle:
+    for i in range(100):
+        execute as @s[scores={Timer=i}] at @s:
+            x = (3*math.sin(i/10))
+            z = (3*math.cos(i/10))
+            particle flame ~x ~ ~z 0 0 0 0 1 normal
+    execute if entity @s[scores={Timer=100..}] run kill @s
+
+    

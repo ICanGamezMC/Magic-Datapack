@@ -1,0 +1,19 @@
+{
+    "name":"Advanced Visuals",
+    "description": "This creates Advanced Visuals for datapack development",
+    "author": "ICanGamez",
+    "require": ["bolt"],
+    "data_pack": {
+        "load":["src"]
+    },
+    "resource_pack": {
+        "load": ["src"]
+    },
+    "pipeline": ["mecha"],
+    "output": "build",
+    "meta": {
+        "bolt":{
+            "entrypoint": ["create:main"]
+        }
+    }
+}

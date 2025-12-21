@@ -1,0 +1,5 @@
+output: dist
+
+pipeline:
+  - bolt:
+      entrypoint: test:main
