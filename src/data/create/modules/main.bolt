@@ -1,7 +1,40 @@
 import math
 import create:config as config
+from create:plib import load_particle_library
 
-config.file_checker()
+
+
+Line3D = load_particle_library()
+
+line = Line3D(0, 0, 0, 5, 5, 5, 100)
+
+for point in line.generate().values():
+    print(point)
+
+
+function particle:line_test:
+    for point in line.generate().values():
+        particle flame point[0] point[1] point[2] 0 0 0 0 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 append function_tag minecraft:tick {
     "values": [
@@ -18,7 +51,7 @@ function particle:load:
 
     #This is an example of pulling value from another file
     say config.a
-
+    tag = "TEST"
     scoreboard objectives add Timer dummy Timer
 
 
@@ -26,11 +59,22 @@ function particle:load:
 function particle:tick:
     execute as @e[tag=Timer] run scoreboard players add @s Timer 1
     execute as @e[tag=Circle] run function particle:entity_particle/circle
+    function particle:raycast
 
-function particle:raycast:
-    execute facing entity @p eyes:
-        particle flame
-        execute unless entity @a[distance=..2] positioned ^ ^ ^0.1 run function particle:raycast
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function particle:entity_particle/circle:
