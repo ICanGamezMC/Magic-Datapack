@@ -1,0 +1,33 @@
+class Dust_Particle:
+    def __init__(self, r=1.0, g=1.0, b=1.0, scale=1.0):
+        self.r = self._clamp_rgb(r)
+        self.g = self._clamp_rgb(g)
+        self.b = self._clamp_rgb(b)
+
+        # Bolt-style scale default
+        if scale > 0.0:
+            self.scale = scale
+        else:
+            self.scale = 1.0
+
+    # Clamp RGB values to [0,1], else 0
+    def _clamp_rgb(self, value):
+        if value < 0.0 or value > 1.0:
+            return 0.0
+        return value
+
+    # Return particle string
+    def to_string(self):
+        return "dust{color:[" + str(self.r) + "," + str(self.g) + "," + str(self.b) + "],scale:" + str(self.scale) + "}"
+
+    # Optional setters
+    def set_color(self, r, g, b):
+        self.r = self._clamp_rgb(r)
+        self.g = self._clamp_rgb(g)
+        self.b = self._clamp_rgb(b)
+
+    def set_scale(self, scale):
+        if scale > 0.0:
+            self.scale = scale
+        else:
+            self.scale = 1.0

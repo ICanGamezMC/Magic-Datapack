@@ -1,0 +1,58 @@
+import math
+import re
+
+class Rotate_Particles:
+    def __init__(self, generator):
+        self.generator = generator
+
+    def rotate_point(self, x, y, z, pivot_x, pivot_y, pivot_z, rx=0, ry=0, rz=0):
+        import math
+        rx = math.radians(rx)
+        ry = math.radians(ry)
+        rz = math.radians(rz)
+
+        # Translate so pivot is at origin
+        x -= pivot_x
+        y -= pivot_y
+        z -= pivot_z
+
+        # Rotate around X
+        new_y = y * math.cos(rx) - z * math.sin(rx)
+        new_z = y * math.sin(rx) + z * math.cos(rx)
+        y = new_y
+        z = new_z
+
+        # Rotate around Y
+        new_x = x * math.cos(ry) + z * math.sin(ry)
+        new_z = -x * math.sin(ry) + z * math.cos(ry)
+        x = new_x
+        z = new_z
+
+        # Rotate around Z
+        new_x = x * math.cos(rz) - y * math.sin(rz)
+        new_y = x * math.sin(rz) + y * math.cos(rz)
+        x = new_x
+        y = new_y
+
+        # Translate back
+        x += pivot_x
+        y += pivot_y
+        z += pivot_z
+
+        return [x, y, z]
+
+    def spawn_particles(self, particle="flame", relative=False, rx=0, ry=0, rz=0):
+        points = list(self.generator.generate().values())
+        if not points:
+            return
+
+        # Use the first point as pivot
+        pivot_x, pivot_y, pivot_z = points[0]
+
+        for x, y, z in points:
+            x, y, z = self.rotate_point(x, y, z, pivot_x, pivot_y, pivot_z, rx, ry, rz)
+
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1

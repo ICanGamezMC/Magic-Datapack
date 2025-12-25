@@ -1,0 +1,294 @@
+import math
+import random
+import itertools
+
+
+class Line3D:
+    def __init__(self, x1, y1, z1, x2, y2, z2, points):
+        self.x1 = x1
+        self.y1 = y1
+        self.z1 = z1
+        self.x2 = x2
+        self.y2 = y2
+        self.z2 = z2
+        self.points = max(2, points)
+
+    def generate(self):
+        points_dict = {}
+        for i in range(self.points):
+            t = i / (self.points - 1)
+            x = self.x1 + (self.x2 - self.x1) * t
+            y = self.y1 + (self.y2 - self.y1) * t
+            z = self.z1 + (self.z2 - self.z1) * t
+            points_dict[i] = (x, y, z)
+        return points_dict
+
+    def spawn_particles(self, particle="flame", relative=False):
+        if not self.spawn_enabled:
+            return
+
+        for x, y, z in self.generate().values():
+            if relative:
+                # Using ~ for relative coordinates
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+
+
+
+
+class Square3D:
+    def __init__(self, x, y, z, size, particles):
+        self.center = [x, y, z]
+        self.size = size
+        self.particles = max(4, particles)
+        self.spawn_enabled = true
+
+    def generate(self):
+        cx = self.center[0]
+        cy = self.center[1]
+        cz = self.center[2]
+        half = self.size / 2
+
+        # corners in XZ plane
+        corners = [
+            [cx - half, cy, cz - half],  # bottom-left
+            [cx + half, cy, cz - half],  # bottom-right
+            [cx + half, cy, cz + half],  # top-right
+            [cx - half, cy, cz + half],  # top-left
+        ]
+
+        # edges connect corners in order
+        result = {}
+        index = 0
+        for i in range(4):
+            p1 = corners[i]
+            p2 = corners[(i + 1) % 4]
+
+            for step in range(self.particles):
+                t = step / (self.particles - 1)
+                x = p1[0] + (p2[0] - p1[0]) * t
+                y = p1[1] + (p2[1] - p1[1]) * t
+                z = p1[2] + (p2[2] - p1[2]) * t
+                result[index] = [x, y, z]
+                index += 1
+
+        return result
+
+    def spawn_particles(self, particle="flame", relative=false):
+        if not self.spawn_enabled:
+            return
+
+        for x, y, z in self.generate().values():
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+
+
+
+    
+
+
+
+
+
+class Circle3D:
+    def __init__(self, cx, cy, cz, radius, points=36, plane="XY"):
+        self.cx = cx
+        self.cy = cy
+        self.cz = cz
+        self.radius = radius
+        self.points = max(3, points)
+        self.plane = plane.upper()
+
+    def generate(self):
+        coords = {}
+        for i in range(self.points):
+            theta = 2 * math.pi * i / self.points
+            if self.plane == "XY":
+                x = self.cx + self.radius * math.cos(theta)
+                y = self.cy + self.radius * math.sin(theta)
+                z = self.cz
+            elif self.plane == "XZ":
+                x = self.cx + self.radius * math.cos(theta)
+                y = self.cy
+                z = self.cz + self.radius * math.sin(theta)
+            elif self.plane == "YZ":
+                x = self.cx
+                y = self.cy + self.radius * math.cos(theta)
+                z = self.cz + self.radius * math.sin(theta)
+            else:
+                raise ValueError("Plane must be XY, XZ, or YZ")
+            coords[i] = (x, y, z)
+        return coords
+    def spawn_particles(self, particle="flame", relative=False):
+        for x, y, z in self.generate().values():
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+
+
+class Sphere3D:
+    def __init__(self, cx, cy, cz, radius, points=100, filled=False):
+        self.cx = cx
+        self.cy = cy
+        self.cz = cz
+        self.radius = radius
+        self.points = max(4, points)
+        self.filled = filled
+
+    def generate(self):
+        coords = {}
+        index = 0
+
+        # Use spherical coordinates
+        rings = int(math.sqrt(self.points))
+        segments = rings * 2
+
+        for i in range(rings):
+            phi = math.pi * i / (rings - 1)  # 0 → π
+
+            # Adjust radius for filled sphere
+            if self.filled:
+                r = self.radius * (i / (rings - 1))
+            else:
+                r = self.radius
+
+            for j in range(segments):
+                theta = 2 * math.pi * j / segments  # 0 → 2π
+
+                x = self.cx + r * math.sin(phi) * math.cos(theta)
+                y = self.cy + r * math.cos(phi)
+                z = self.cz + r * math.sin(phi) * math.sin(theta)
+
+                coords[index] = (x, y, z)
+                index += 1
+
+        return coords
+    def spawn_particles(self, particle="flame", relative=False):
+        for x, y, z in self.generate().values():
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+
+
+
+class Plane3D:
+    def __init__(self, px, py, pz, nx, ny, nz):
+        self.px = px
+        self.py = py
+        self.pz = pz
+
+        mag = math.sqrt(nx*nx + ny*ny + nz*nz)
+        self.nx = nx / mag
+        self.ny = ny / mag
+        self.nz = nz / mag
+
+        # Choose non-parallel axis
+        if abs(self.nx) < 0.9:
+            ax = 1
+            ay = 0
+            az = 0
+        else:
+            ax = 0
+            ay = 1
+            az = 0
+
+        # u axis
+        self.ux = self.ny * az - self.nz * ay
+        self.uy = self.nz * ax - self.nx * az
+        self.uz = self.nx * ay - self.ny * ax
+
+        um = math.sqrt(self.ux*self.ux + self.uy*self.uy + self.uz*self.uz)
+        self.ux /= um
+        self.uy /= um
+        self.uz /= um
+
+        # v axis
+        self.vx = self.ny * self.uz - self.nz * self.uy
+        self.vy = self.nz * self.ux - self.nx * self.uz
+        self.vz = self.nx * self.uy - self.ny * self.ux
+
+    def project(self, u, v):
+        return (
+            self.px + u * self.ux + v * self.vx,
+            self.py + u * self.uy + v * self.vy,
+            self.pz + u * self.uz + v * self.vz
+        )
+
+    # ---------- Particle samplers ----------
+
+    def emit_line(self, length, count=2, particle=10, relative=True):
+        points = {}
+
+        for i in range(count):
+            t = i / max(1, count - 1)
+            u = (t - 0.5) * length
+            v = 0
+
+            p = self.project(u, v)
+            x = p[0]
+            y = p[1]
+            z = p[2]
+
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+            points[i] = p
+
+        return points
+
+    def emit_circle(self, radius, count=2, particle=10, relative=True):
+        points = {}
+
+        for i in range(count):
+            angle = 2 * math.pi * i / count
+            u = math.cos(angle) * radius
+            v = math.sin(angle) * radius
+
+            p = self.project(u, v)
+            x = p[0]
+            y = p[1]
+            z = p[2]
+
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+            points[i] = p
+
+        return points
+
+    def emit_random(self, radius, count=2, particle=10, relative=True):
+        points = {}
+
+        for i in range(count):
+            r = radius * math.sqrt(random.random())
+            a = random.random() * 2 * math.pi
+            u = math.cos(a) * r
+            v = math.sin(a) * r
+
+            p = self.project(u, v)
+            x = p[0]
+            y = p[1]
+            z = p[2]
+
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
+
+            points[i] = p
+
+        return points
+    

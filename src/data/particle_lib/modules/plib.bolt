@@ -1,0 +1,19 @@
+from particle_lib:basic_objects import Line3D, Circle3D, Sphere3D, Plane3D ,Square3D
+from particle_lib:rotate_objects import Rotate_Particles
+from particle_lib:3d_render import Polygon_MeshFromPoints
+from particle_lib:particle_simple import Dust_Particle
+#from particle_lib.modules.test import test
+
+
+class ParticleLibrary:
+    def __init__(self):
+        self.Rotate_Particles = Rotate_Particles
+        self.Line3D = Line3D
+        self.Circle3D = Circle3D
+        self.Polygon_MeshFromPoints = Polygon_MeshFromPoints
+        self.Sphere3D = Sphere3D
+        self.Plane3D = Plane3D
+        self.Square3D = Square3D
+        self.Dust_Particle = Dust_Particle
+
+

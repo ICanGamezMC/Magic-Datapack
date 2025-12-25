@@ -1,24 +1,51 @@
 import math
 import create:config as config
-from create:plib import load_particle_library
+
+from particle_lib:plib import ParticleLibrary
+particles = ParticleLibrary()
 
 
+line = particles.Line3D(2, 4, 2, 4, 3, 2, 15)
+line2 = particles.Line3D(0, 0, 0, -11, 1, 1, 95)
+circle = particles.Circle3D(0, 10, 0, 2, 86,"XZ")
+sphere = particles.Sphere3D(0, 0, 0, 4, 200)
+plane = particles.Plane3D(-0, -0, -0, -1.2,-3,-2)
+plane2 = particles.Plane3D(-0, -0, -0, -4,-3,-2)
 
-Line3D = load_particle_library()
+square = particles.Square3D(1,5,3,4, 30)
+triangle = particles.Polygon_MeshFromPoints([(0,0,0),(2,0,0),(0,0,2),(0,4,2),(0,-4,-2)], 2000)
+rotator = particles.Rotate_Particles(square)
+rotator2 = particles.Rotate_Particles(circle)
 
-line = Line3D(0, 0, 0, 5, 5, 5, 100)
+dust2 = particles.Dust_Particle(1.0, 0.5, 0.0, 2.0)
 
-for point in line.generate().values():
-    print(point)
 
 
 function particle:line_test:
-    for point in line.generate().values():
-        particle flame point[0] point[1] point[2] 0 0 0 0 1
+    
+    #line.spawn_particles("flame",True)
+    #square.spawn_particles("dust{color:[1.0,1.0,0.5],scale:1}",True)
+    #rotator.spawn_particles("dust{color:[1.0,1.0,1.0],scale:1}",True, rx=30, ry=45, rz=0)
+    #rotator2.spawn_particles("flame",True, rx=190, ry=235, rz=20)
+
+    #line2.spawn_particles("flame",False)
+    #circle.spawn_particles("dust{color:[1.0,0.13,0.13],scale:1}",True)
+    
+    #plane.emit_random(13,4000,"end_rod", True)
+    #plane2.emit_line(13,4000,"end_rod", True)
+    for i in range(20):
+        dust = particles.Dust_Particle(math.sin(i), 0.0, math.cos(i), 1.0)
+        circle = particles.Circle3D(0, 1, 0, 2, 86,"XZ")
+        rotator = particles.Rotate_Particles(circle)
+        rotator.spawn_particles(dust.to_string(),True,rx=0, ry=18*i, rz=0)
 
 
-
-
+#function particle:test_max:
+#
+#    for i in range(60):
+#        dust = particles.Dust_Particle(-1.0, i/60, 1.0-i/60, 2.0)
+#        circle = particles.Circle3D(0,1,0,i/10, 1+i*2,"XZ")
+#        circle.spawn_particles(dust.to_string(),True)
 
 
 

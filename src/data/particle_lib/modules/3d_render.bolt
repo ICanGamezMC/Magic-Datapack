@@ -1,0 +1,172 @@
+import math
+import random
+
+class Polygon_MeshFromPoints:
+    def __init__(self, points_list, num_points):
+        self.points_list = points_list
+        self.num_points = num_points
+        self.vertices = {}
+        self.faces = {}
+        self._generate_mesh()
+
+    def _dist2(self, a, b):
+        dx = a[0] - b[0]
+        dy = a[1] - b[1]
+        dz = a[2] - b[2]
+        return dx*dx + dy*dy + dz*dz
+
+    def _generate_mesh(self):
+        # declare variables at the top
+        n = 0
+        i = 0
+        j = 0
+        neighbors = {}
+        neighbor_list = {}
+        idx_n = 0
+        k = 0
+        m = 0
+        temp = None
+        face_idx = 0
+
+        # count points
+        n = 0
+        for p in self.points_list:
+            n += 1
+
+        self.vertices = {}
+        self.faces = {}
+
+        # fill vertices
+        i = 0
+        while i < n:
+            self.vertices[i] = self.points_list[i]
+            i += 1
+
+        # create faces using two closest neighbors
+        i = 0
+        while i < n:
+            neighbors = {}
+            j = 0
+            while j < n:
+                if j != i:
+                    neighbors[j] = [self._dist2(self.points_list[i], self.points_list[j]), j]
+                j += 1
+
+            # convert dict to list for sorting
+            neighbor_list = {}
+            idx_n = 0
+            for key in neighbors:
+                neighbor_list[idx_n] = neighbors[key]
+                idx_n += 1
+
+            # selection sort
+            k = 0
+            while k < idx_n - 1:
+                m = k + 1
+                while m < idx_n:
+                    temp = None
+                    if neighbor_list[m][0] < neighbor_list[k][0]:
+                        temp = neighbor_list[k]
+                        neighbor_list[k] = neighbor_list[m]
+                        neighbor_list[m] = temp
+                    m += 1
+                k += 1
+
+            # create face with two closest neighbors
+            if idx_n >= 2:
+                face_idx = 0
+                for key in self.faces:
+                    face_idx += 1
+                self.faces[face_idx] = [i, neighbor_list[0][1], neighbor_list[1][1]]
+            i += 1
+
+    def generate(self):
+        # declare all variables at top because bolt is stupid
+        coords = {}
+        ln_faces = 0
+        ln_vertices = 0
+        fallback_i = 0
+        idx = 0
+        tri_idx = 0
+        tri = None
+        a = None
+        b = None
+        c = None
+        u = 0.0
+        v = 0.0
+        x = 0.0
+        y = 0.0
+        z = 0.0
+        rand_index = 0
+        tri_keys = []
+
+        # count faces
+        ln_faces = 0
+        for key in self.faces:
+            ln_faces += 1
+
+        # count vertices
+        ln_vertices = 0
+        for key in self.vertices:
+            ln_vertices += 1
+
+        # fallback if no faces
+        if ln_faces == 0:
+            if ln_vertices == 0:
+                return coords
+            idx = 0
+            while idx < self.num_points:
+                fallback_i = idx % ln_vertices
+                coords[idx] = self.vertices[fallback_i]
+                idx += 1
+            return coords
+
+        # generate points
+        idx = 0
+        while idx < self.num_points:
+            # pick random triangle
+            tri_keys = []
+            for key in self.faces:
+                tri_keys.append(key)
+
+            rand_index = random.randint(0, len(tri_keys) - 1)
+            tri_idx = tri_keys[rand_index]
+            tri = self.faces[tri_idx]
+
+            a = self.vertices[tri[0]]
+            b = self.vertices[tri[1]]
+            c = self.vertices[tri[2]]
+
+            # random barycentric coordinates
+            u = random.random()
+            v = random.random()
+            if (u + v) > 1.0:
+                u = 1.0 - u
+                v = 1.0 - v
+
+            # compute coordinates inline (Bolt-safe)
+            x = a[0] * (1.0 - u - v) + b[0] * u + c[0] * v
+            y = a[1] * (1.0 - u - v) + b[1] * u + c[1] * v
+            z = a[2] * (1.0 - u - v) + b[2] * u + c[2] * v
+
+            coords[idx] = [x, y, z]
+            idx += 1
+
+        return coords
+
+    def spawn_particles(self, particle="flame", relative=False):
+        # declare variables at top
+        pos = None
+        x = 0.0
+        y = 0.0
+        z = 0.0
+
+        for pos in self.generate().values():
+            x = pos[0]
+            y = pos[1]
+            z = pos[2]
+
+            if relative:
+                particle particle ~x ~y ~z 0 0 0 0 1
+            else:
+                particle particle x y z 0 0 0 0 1
